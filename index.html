@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autobahn Rush Prototype</title>
+    <meta
+      name="description"
+      content="Browser-based 3D highway racing prototype with an original debadged performance sedan."
+    />
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game-canvas" aria-label="3D highway driving game"></canvas>
+
+      <div id="loading-screen" class="overlay active">
+        <div class="panel loading-panel">
+          <div class="eyebrow">Original Vehicle Prototype</div>
+          <h1>Autobahn Rush</h1>
+          <p>
+            Building highway traffic, streaming scenery, procedural audio, weather, and the
+            debadged sports sedan garage.
+          </p>
+          <div class="progress-track">
+            <div id="loading-bar" class="progress-fill"></div>
+          </div>
+          <span id="loading-text">Initializing renderer...</span>
+        </div>
+      </div>
+
+      <div id="menu-root" class="overlay active">
+        <div class="menu-shell">
+          <aside class="menu-sidebar panel">
+            <div class="brand-lockup">
+              <div class="eyebrow">No Logos. No Badges. All Rush.</div>
+              <h1>Autobahn Rush</h1>
+              <p>
+                A modern highway racer built around an original German-inspired sports sedan and a
+                survival-heavy scoring loop.
+              </p>
+            </div>
+            <nav class="nav-links">
+              <button class="nav-link active" data-screen="main-menu">Race</button>
+              <button class="nav-link" data-screen="garage-screen">Garage</button>
+              <button class="nav-link" data-screen="mission-screen">Career</button>
+              <button class="nav-link" data-screen="leaderboard-screen">Leaderboard</button>
+              <button class="nav-link" data-screen="settings-screen">Settings</button>
+            </nav>
+            <div class="profile-card">
+              <div>
+                <span class="label">Driver Level</span>
+                <strong id="profile-level">1</strong>
+              </div>
+              <div>
+                <span class="label">Credits</span>
+                <strong id="profile-money">0</strong>
+              </div>
+              <div>
+                <span class="label">Daily Reward</span>
+                <button id="daily-reward-btn" class="secondary">Claim</button>
+              </div>
+            </div>
+          </aside>
+
+          <main class="menu-content">
+            <section id="main-menu" class="screen active">
+              <div class="screen-header">
+                <div>
+                  <span class="eyebrow">Select Mode</span>
+                  <h2>Highway Events</h2>
+                </div>
+                <div class="stats-chip">
+                  <span>Unlocked Routes</span>
+                  <strong id="unlocked-routes">3</strong>
+                </div>
+              </div>
+              <div id="mode-grid" class="mode-grid"></div>
+              <div class="menu-actions panel">
+                <div>
+                  <span class="label">Selected Event</span>
+                  <strong id="selected-mode-name">Endless Traffic</strong>
+                  <p id="selected-mode-desc">
+                    Classic traffic weaving with progressive density and score-focused play.
+                  </p>
+                </div>
+                <button id="start-run-btn" class="primary">Start Run</button>
+              </div>
+            </section>
+
+            <section id="garage-screen" class="screen">
+              <div class="screen-header">
+                <div>
+                  <span class="eyebrow">Garage & Tuning</span>
+                  <h2>Debadged Sports Sedan</h2>
+                </div>
+                <button id="garage-reset-btn" class="secondary">Reset Tuning</button>
+              </div>
+              <div class="garage-grid">
+                <div class="panel garage-column">
+                  <h3>Performance Upgrades</h3>
+                  <div id="upgrade-list" class="list-stack"></div>
+                </div>
+                <div class="panel garage-column">
+                  <h3>Visual Customization</h3>
+                  <div class="control-group">
+                    <label for="paint-color">Paint</label>
+                    <input id="paint-color" type="color" value="#3c435a" />
+                  </div>
+                  <div class="control-group">
+                    <label for="finish-type">Finish</label>
+                    <select id="finish-type">
+                      <option value="gloss">Gloss</option>
+                      <option value="matte">Matte</option>
+                      <option value="metallic">Metallic</option>
+                      <option value="pearl">Pearl</option>
+                      <option value="chrome">Chrome</option>
+                      <option value="carbon">Carbon</option>
+                    </select>
+                  </div>
+                  <div class="control-group">
+                    <label for="wheel-style">Wheel Style</label>
+                    <select id="wheel-style">
+                      <option value="sport">Sport</option>
+                      <option value="mesh">Mesh</option>
+                      <option value="track">Track</option>
+                    </select>
+                  </div>
+                  <div class="control-group">
+                    <label for="headlight-color">Headlight Color</label>
+                    <input id="headlight-color" type="color" value="#dff5ff" />
+                  </div>
+                  <div class="control-group">
+                    <label for="caliper-color">Caliper Color</label>
+                    <input id="caliper-color" type="color" value="#ff542d" />
+                  </div>
+                  <div class="control-group">
+                    <label for="interior-color">Interior</label>
+                    <input id="interior-color" type="color" value="#101113" />
+                  </div>
+                  <div class="control-group">
+                    <label for="window-tint">Window Tint</label>
+                    <input id="window-tint" type="range" min="0.1" max="0.9" step="0.05" value="0.55" />
+                  </div>
+                </div>
+                <div class="panel garage-column">
+                  <h3>Tuning Setup</h3>
+                  <div id="tuning-list" class="list-stack"></div>
+                </div>
+              </div>
+            </section>
+
+            <section id="mission-screen" class="screen">
+              <div class="screen-header">
+                <div>
+                  <span class="eyebrow">Career Missions</span>
+                  <h2>Progress & Achievements</h2>
+                </div>
+              </div>
+              <div class="garage-grid">
+                <div class="panel garage-column">
+                  <h3>Active Missions</h3>
+                  <div id="mission-list" class="list-stack"></div>
+                </div>
+                <div class="panel garage-column">
+                  <h3>Achievements</h3>
+                  <div id="achievement-list" class="list-stack"></div>
+                </div>
+                <div class="panel garage-column">
+                  <h3>Feature Board</h3>
+                  <div class="feature-list">
+                    <div class="feature-card">
+                      <strong>Photo Mode</strong>
+                      <span>Pause and orbit the car after a run.</span>
+                    </div>
+                    <div class="feature-card">
+                      <strong>Leaderboards</strong>
+                      <span>Local scores are saved on this browser only.</span>
+                    </div>
+                    <div class="feature-card">
+                      <strong>Route Unlocks</strong>
+                      <span>More scenery sets can be unlocked from level progression.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="leaderboard-screen" class="screen">
+              <div class="screen-header">
+                <div>
+                  <span class="eyebrow">Local Session Scores</span>
+                  <h2>Leaderboard</h2>
+                </div>
+              </div>
+              <div id="leaderboard-list" class="leaderboard-list"></div>
+            </section>
+
+            <section id="settings-screen" class="screen">
+              <div class="screen-header">
+                <div>
+                  <span class="eyebrow">Graphics, Audio & Controls</span>
+                  <h2>Settings</h2>
+                </div>
+              </div>
+              <div class="garage-grid">
+                <div class="panel garage-column">
+                  <h3>Graphics</h3>
+                  <div class="control-group">
+                    <label for="graphics-quality">Quality</label>
+                    <select id="graphics-quality">
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high" selected>High</option>
+                      <option value="ultra">Ultra</option>
+                    </select>
+                  </div>
+                  <div class="control-group">
+                    <label for="camera-shake">Camera Shake</label>
+                    <input id="camera-shake" type="range" min="0" max="1" step="0.05" value="0.6" />
+                  </div>
+                  <div class="control-group">
+                    <label for="show-map">Mini Map</label>
+                    <select id="show-map">
+                      <option value="on">On</option>
+                      <option value="off">Off</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="panel garage-column">
+                  <h3>Audio</h3>
+                  <div class="control-group">
+                    <label for="master-volume">Master Volume</label>
+                    <input id="master-volume" type="range" min="0" max="1" step="0.05" value="0.8" />
+                  </div>
+                  <div class="control-group">
+                    <label for="engine-volume">Engine Volume</label>
+                    <input id="engine-volume" type="range" min="0" max="1" step="0.05" value="0.85" />
+                  </div>
+                  <div class="control-group">
+                    <label for="ambience-volume">Ambience Volume</label>
+                    <input id="ambience-volume" type="range" min="0" max="1" step="0.05" value="0.45" />
+                  </div>
+                  <div class="control-group">
+                    <label for="music-volume">Music Volume</label>
+                    <input id="music-volume" type="range" min="0" max="1" step="0.05" value="0.2" />
+                  </div>
+                  <div class="control-group">
+                    <label for="sfx-volume">SFX Volume</label>
+                    <input id="sfx-volume" type="range" min="0" max="1" step="0.05" value="0.85" />
+                  </div>
+                </div>
+                <div class="panel garage-column">
+                  <h3>Controls</h3>
+                  <div class="control-group">
+                    <label for="steer-sensitivity">Steering Sensitivity</label>
+                    <input id="steer-sensitivity" type="range" min="0.4" max="1.8" step="0.05" value="1" />
+                  </div>
+                  <div class="control-group">
+                    <label for="steering-filter">Steering Filter</label>
+                    <input id="steering-filter" type="range" min="0" max="1" step="0.05" value="0.4" />
+                  </div>
+                  <div class="control-group">
+                    <label for="steer-return-speed">Steering Return</label>
+                    <input id="steer-return-speed" type="range" min="0.6" max="1.8" step="0.05" value="1.1" />
+                  </div>
+                  <div class="control-group">
+                    <label for="gamepad-deadzone">Gamepad Deadzone</label>
+                    <input id="gamepad-deadzone" type="range" min="0.02" max="0.35" step="0.01" value="0.14" />
+                  </div>
+                  <div class="control-group">
+                    <label for="touch-layout">Touch Layout</label>
+                    <select id="touch-layout">
+                      <option value="split">Split</option>
+                      <option value="compact">Compact</option>
+                    </select>
+                  </div>
+                  <div class="control-group">
+                    <label for="gamepad-enabled">Gamepad</label>
+                    <select id="gamepad-enabled">
+                      <option value="on">On</option>
+                      <option value="off">Off</option>
+                    </select>
+                  </div>
+                  <div class="control-group">
+                    <label for="auto-headlights">Auto Headlights</label>
+                    <select id="auto-headlights">
+                      <option value="on">On</option>
+                      <option value="off">Off</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="panel settings-reference">
+                <h3>Layout & Bindings</h3>
+                <div class="control-reference">
+                  <div class="feature-card">
+                    <strong>Keyboard</strong>
+                    <span>W / S accelerate and brake, A / D steer, Space handbrake, Shift nitro.</span>
+                  </div>
+                  <div class="feature-card">
+                    <strong>Session</strong>
+                    <span>C switches cameras, H headlights, Q and E signals, F horn, M map, Esc pause.</span>
+                  </div>
+                  <div class="feature-card">
+                    <strong>Mobile & Gamepad</strong>
+                    <span>Split or compact touch layout, analog deadzone tuning, and live pad toggles all update from here.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="menu-actions panel settings-actions">
+                <button id="apply-settings-btn" class="primary">Apply Settings</button>
+                <button id="close-settings-btn" class="secondary hidden">Back To Pause</button>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+
+      <div id="hud" class="hud hidden">
+        <div class="hud-top">
+          <div class="hud-pill">
+            <span class="label">Mode</span>
+            <strong id="hud-mode">Endless Traffic</strong>
+          </div>
+          <div class="hud-pill">
+            <span class="label">Objective</span>
+            <strong id="hud-objective">Survive and build combo</strong>
+          </div>
+          <div class="hud-pill">
+            <span class="label">Camera</span>
+            <strong id="hud-camera">Chase</strong>
+          </div>
+          <div class="hud-pill">
+            <span class="label">Wanted</span>
+            <strong id="hud-wanted">0</strong>
+          </div>
+        </div>
+
+        <div class="hud-side left">
+          <div class="panel instrument-cluster">
+            <div class="dial">
+              <span class="label">Speed</span>
+              <strong id="hud-speed">0</strong>
+              <span>km/h</span>
+            </div>
+            <div class="dial">
+              <span class="label">RPM</span>
+              <strong id="hud-rpm">900</strong>
+              <span>rpm</span>
+            </div>
+            <div class="dial">
+              <span class="label">Gear</span>
+              <strong id="hud-gear">1</strong>
+              <span>gear</span>
+            </div>
+          </div>
+
+          <div class="panel telemetry-panel">
+            <div class="metric-row">
+              <span>Score</span>
+              <strong id="hud-score">0</strong>
+            </div>
+            <div class="metric-row">
+              <span>Combo</span>
+              <strong id="hud-combo">1.0x</strong>
+            </div>
+            <div class="metric-row">
+              <span>Money</span>
+              <strong id="hud-money">0</strong>
+            </div>
+            <div class="metric-row">
+              <span>Distance</span>
+              <strong id="hud-distance">0.00 km</strong>
+            </div>
+            <div class="metric-row">
+              <span>Top Speed</span>
+              <strong id="hud-top-speed">0 km/h</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-side right">
+          <div class="panel status-panel">
+            <div class="status-bar">
+              <span>Nitro</span>
+              <div class="bar-track"><div id="nitro-bar" class="bar-fill nitro"></div></div>
+            </div>
+            <div class="status-bar">
+              <span>Damage</span>
+              <div class="bar-track"><div id="damage-bar" class="bar-fill damage"></div></div>
+            </div>
+            <div class="status-bar">
+              <span>Combo Timer</span>
+              <div class="bar-track"><div id="combo-bar" class="bar-fill combo"></div></div>
+            </div>
+          </div>
+          <div id="event-feed" class="panel event-feed"></div>
+          <canvas id="mini-map" width="220" height="220" class="panel mini-map"></canvas>
+        </div>
+
+        <div class="hud-bottom">
+          <div class="panel control-hints">
+            <span>WASD / Arrows</span>
+            <span>Shift Nitro</span>
+            <span>Space Handbrake</span>
+            <span>C Camera</span>
+            <span>R Reset</span>
+            <span>Esc Pause</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="pause-menu" class="overlay hidden">
+        <div class="panel pause-panel">
+          <span class="eyebrow">Paused</span>
+          <h2>Highway Session</h2>
+          <div class="menu-actions stacked">
+            <button id="resume-btn" class="primary">Resume</button>
+            <button id="pause-settings-btn" class="secondary">Settings</button>
+            <button id="quit-run-btn" class="secondary">Quit Run</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="results-screen" class="overlay hidden">
+        <div class="panel results-panel">
+          <span class="eyebrow">Run Complete</span>
+          <h2 id="results-title">Session Results</h2>
+          <div id="results-grid" class="results-grid"></div>
+          <div class="menu-actions">
+            <button id="results-retry-btn" class="primary">Run Again</button>
+            <button id="results-garage-btn" class="secondary">Garage</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="nickname-screen" class="overlay hidden">
+        <div class="panel nickname-panel">
+          <span class="eyebrow">Driver Check-In</span>
+          <h2>Enter Nickname</h2>
+          <p>
+            This run will be saved to the local leaderboard for
+            <strong id="nickname-mode">Endless Traffic</strong>.
+          </p>
+          <input
+            id="nickname-input"
+            type="text"
+            maxlength="18"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Nickname"
+            aria-label="Nickname"
+          />
+          <div class="menu-actions nickname-actions">
+            <button id="nickname-start-btn" class="primary" disabled>Start</button>
+            <button id="nickname-cancel-btn" class="secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="cockpit-overlay" class="hidden">
+        <div class="windshield-glass"></div>
+        <div id="windshield-rain" class="windshield-rain"></div>
+        <div id="windshield-crack" class="windshield-crack"></div>
+      </div>
+
+      <div id="touch-controls" class="touch-controls hidden">
+        <div class="touch-left">
+          <button data-action="left">&lt;</button>
+          <button data-action="right">&gt;</button>
+        </div>
+        <div class="touch-right">
+          <button data-action="brake">Brake</button>
+          <button data-action="nitro">Nitro</button>
+          <button data-action="handbrake">Drift</button>
+          <button data-action="accelerate">Gas</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
